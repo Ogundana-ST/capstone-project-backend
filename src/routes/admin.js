@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const db = require('../db');
-const { MATERIALS, HttpError, ah } = require('../utils');
+const { MATERIALS, CURRENCY, formatNaira, HttpError, ah } = require('../utils');
 const { authenticate, requireRole } = require('../middleware/auth');
 
 router.use(authenticate, requireRole('ADMIN'));
@@ -66,7 +66,8 @@ router.get('/overview', ah(async (req, res) => {
        WHERE status IN ('COMPLETED','DISPUTED') AND (scheduled_date AT TIME ZONE 'UTC')::date = (now() AT TIME ZONE 'UTC')::date`),
     listDisputes(),
   ]);
-  res.json({ ...totals.rows[0], disputes });
+ const t = totals.rows[0];
+res.json({ ...t, currency: CURRENCY, today_payouts_formatted: formatNaira(t.today_payouts), disputes });
 }));
 
 function listDisputes() {

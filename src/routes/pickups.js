@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const db = require('../db');
-const { MATERIALS, HttpError, ah } = require('../utils');
+const { MATERIALS, CURRENCY, formatNaira, HttpError, ah } = require('../utils');
 const { authenticate, requireRole } = require('../middleware/auth');
 const { scheduleNext } = require('../services/scheduling');
 
@@ -28,7 +28,9 @@ router.get('/dashboard', ah(async (req, res) => {
   res.json({
     next_pickup: next.rows[0] || null,
     rates: rates.rows,
+        currency: CURRENCY,
     wallet_balance: user.rows[0].wallet_balance,
+    wallet_balance_formatted: formatNaira(user.rows[0].wallet_balance),
     is_paused: user.rows[0].is_paused,
     history: history.rows,
     notifications: notes.rows,

@@ -1,4 +1,6 @@
 const MATERIALS = ['PET', 'CANS', 'CARTONS', 'GLASS'];
+const CURRENCY = 'NGN';
+const formatNaira = (n) => '₦' + Number(n || 0).toLocaleString('en-US');
 
 class HttpError extends Error {
   constructor(status, message) {
@@ -19,4 +21,4 @@ function nextSaturday(hourUTC, after = new Date()) {
   return d;
 }
 
-module.exports = { MATERIALS, HttpError, ah, nextSaturday };
+module.exports = { MATERIALS, CURRENCY, formatNaira, HttpError, ah, nextSaturday };

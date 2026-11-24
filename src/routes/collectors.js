@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const db = require('../db');
-const { MATERIALS, HttpError, ah } = require('../utils');
+const { MATERIALS, CURRENCY, formatNaira, HttpError, ah } = require('../utils');
 const { authenticate, requireRole, requireApprovedCollector } = require('../middleware/auth');
 const { scheduleNext } = require('../services/scheduling');
 
@@ -113,7 +113,7 @@ router.post('/collector/pickups/:id/weigh', requireApprovedCollector, ah(async (
 
     if (pickup.pickup_type === 'RECURRING') await scheduleNext(client, pickup.user_id, pickup.scheduled_date);
     await client.query('COMMIT');
-    res.json({ total_kg: totalKg, total_payout: totalPayout, wallet_credited: true });
+    res.json({ total_kg: totalKg, total_payout: totalPayout, currency: CURRENCY, total_payout_formatted: formatNaira(totalPayout), wallet_credited: true });
   } catch (e) {
     await client.query('ROLLBACK');
     throw e;
