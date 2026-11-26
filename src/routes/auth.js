@@ -52,7 +52,15 @@ async function verifyGoogle(idToken) {
     const ticket = await googleClient.verifyIdToken({ idToken, audience: process.env.GOOGLE_CLIENT_ID });
     const p = ticket.getPayload();
     return { sub: p.sub, email: p.email.toLowerCase(), name: p.name };
-  } catch {
+  } catch (error) {
+    const reason = String(error?.message || 'Google token verification failed')
+      .replace(/\beyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, '[redacted token]')
+      .slice(0, 240);
+    console.warn('[auth/google] ID token verification failed', {
+      name: error?.name || 'Error',
+      code: error?.code || undefined,
+      reason
+    });
     throw new HttpError(401, 'Invalid Google token');
   }
 }
