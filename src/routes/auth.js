@@ -40,6 +40,7 @@ async function verifyPassword(password, storedHash) {
 }
 
 const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const normalizePhone = (value) => String(value || '').trim().replace(/[\s().-]/g, '') || null;
 
 async function verifyGoogle(idToken) {
   // Dev shortcut for Postman testing: id_token = "dev:someone@email.com"
@@ -86,11 +87,12 @@ router.post('/google', ah(async (req, res) => {
 router.post('/signup', ah(async (req, res) => {
   const fullName = String(req.body.full_name || '').trim();
   const email = String(req.body.email || '').trim().toLowerCase();
-  const phone = String(req.body.phone || '').trim() || null;
+  const phone = normalizePhone(req.body.phone);
   const password = String(req.body.password || '');
   const role = String(req.body.role || '').trim().toUpperCase();
   if (fullName.length < 2 || fullName.length > 120) throw new HttpError(400, 'full_name must be between 2 and 120 characters');
   if (email.length > 254 || !validEmail(email)) throw new HttpError(400, 'Enter a valid email address');
+  if (phone && !/^\+?\d{7,15}$/.test(phone)) throw new HttpError(400, 'Enter a phone number with 7 to 15 digits, optionally starting with +');
   if (password.length < 8 || password.length > 128) throw new HttpError(400, 'password must be between 8 and 128 characters');
   if (!['HOUSEHOLD', 'ESTATE', 'COLLECTOR'].includes(role))
     throw new HttpError(400, 'role must be HOUSEHOLD, ESTATE or COLLECTOR');
@@ -121,9 +123,10 @@ router.post('/login', ah(async (req, res) => {
   if (!identifier || !password) throw new HttpError(400, 'email and password are required');
 
   const email = identifier.toLowerCase();
+  const phoneIdentifier = identifier.includes('@') ? identifier : normalizePhone(identifier);
   const { rows } = await db.query(
     'SELECT * FROM users WHERE lower(email)=$1 OR phone=$2 LIMIT 1',
-    [email, identifier]
+    [email, phoneIdentifier]
   );
   const user = rows[0];
   if (!user?.password_hash || !(await verifyPassword(password, user.password_hash)))
