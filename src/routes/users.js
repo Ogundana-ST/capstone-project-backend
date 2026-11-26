@@ -6,6 +6,17 @@ const { createFirstRecurring, scheduleNext } = require('../services/scheduling')
 
 router.use(authenticate, requireRole('HOUSEHOLD', 'ESTATE'));
 
+// PATCH /users/profile - update account details without resetting recurring pickups
+router.patch('/profile', ah(async (req, res) => {
+  const { full_name, address, phone } = req.body;
+  if (!full_name || !address) throw new HttpError(400, 'full_name and address are required');
+  const { rows } = await db.query(
+    'UPDATE users SET full_name=$1, address=$2, phone=$3 WHERE id=$4 RETURNING *',
+    [full_name, address, phone || null, req.user.id]
+  );
+  res.json({ user: rows[0] });
+}));
+
 // PATCH /users/onboarding  (FR-01)
 router.patch('/onboarding', ah(async (req, res) => {
   const { full_name, address, phone, pickup_interval, usual_materials, lat, lng } = req.body;
@@ -49,3 +60,4 @@ router.patch('/pause-toggle', ah(async (req, res) => {
 }));
 
 module.exports = router;
+
