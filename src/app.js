@@ -20,6 +20,7 @@ app.use((req, res) => res.status(404).json({ error: `Route not found: ${req.meth
 // Central error handler: every error ends up here
 app.use((err, req, res, next) => {
   if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON body' });
+  if (err.type === 'entity.too.large') return res.status(413).json({ error: 'Profile image must be 2 MB or smaller' });
   if (!err.status) console.error(err);
   res.status(err.status || 500).json({ error: err.status ? err.message : 'Something went wrong on the server' });
 });

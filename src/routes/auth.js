@@ -11,7 +11,7 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const scrypt = promisify(crypto.scrypt);
 
 function publicUser(user) {
-  const { password_hash, google_id, ...safeUser } = user;
+  const { password_hash, google_id, avatar_path, ...safeUser } = user;
   return safeUser;
 }
 

@@ -14,7 +14,7 @@ The email/password signup and login additions in `src/routes/auth.js`, the profi
 4. Apply `migrations/20261125_password_auth.sql` after the existing `users` table has been created.
 5. Start with `npm start`.
 
-The local Session pooler connection was verified with a read-only query. No current backend code reads `SUPABASE_URL` or `SUPABASE_PUBLISHABLE_KEY`, or validates Supabase Auth sessions. Keep the existing Google/email-password sign-in until the team chooses and implements Supabase Auth.
+The local Session pooler connection was verified with a read-only query. Supabase Storage is used for private profile avatars only; this does not enable Supabase Auth. Set `SUPABASE_URL` and the secret `SUPABASE_SERVICE_ROLE_KEY` in the backend environment (Render and local `.env`); never add the service-role key to frontend config or Git. `SUPABASE_PROFILE_BUCKET` is optional and defaults to `profile-avatars`. Apply `migrations/20261126_profile_avatar.sql` after the existing `users` table is present; it adds the `avatar_path` column and creates/configures the private bucket for JPEG, PNG, and WebP files up to 2 MB.
 
 ## Authentication routes
 
@@ -23,6 +23,8 @@ The local Session pooler connection was verified with a read-only query. No curr
 - `POST /v1/auth/login` signs in with email or phone and password.
 
 Protected routes use `Authorization: Bearer <JWT>`. Passwords are stored as scrypt hashes. API responses omit the password hash and Google ID.
+
+Authenticated accounts can read their own profile with `GET /v1/users/profile` and upload a private avatar with `PUT /v1/users/profile/avatar`. Avatar URLs are signed and expire after one hour. The upload accepts raw JPEG, PNG, or WebP bytes up to 2 MB; only the owning user can change their image.
 
 The collector OTP endpoint still uses the fixed demo code `123456`; it is not production phone verification.
 
