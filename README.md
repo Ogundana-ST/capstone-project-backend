@@ -14,7 +14,7 @@ The email/password signup and login additions in `src/routes/auth.js`, the profi
 4. Apply `migrations/20261125_password_auth.sql` after the existing `users` table has been created.
 5. Start with `npm start`.
 
-The local Session pooler connection was verified with a read-only query. Supabase Storage is used for private profile avatars only; this does not enable Supabase Auth. Set `SUPABASE_URL` and the secret `SUPABASE_SERVICE_ROLE_KEY` in the backend environment (Render and local `.env`); never add the service-role key to frontend config or Git. `SUPABASE_PROFILE_BUCKET` is optional and defaults to `profile-avatars`. Apply `migrations/20261126_profile_avatar.sql` after the existing `users` table is present; it adds the `avatar_path` column and creates/configures the private bucket for JPEG, PNG, and WebP files up to 2 MB.
+The local Session pooler connection was verified with a read-only query. Supabase Storage is used for private profile avatars only; this does not enable Supabase Auth. Set `SUPABASE_URL` and the Supabase Secret key (`SUPABASE_SECRET_KEY`, beginning `sb_secret_`) in the backend environment (Render and local `.env`). The older `SUPABASE_SERVICE_ROLE_KEY` JWT remains supported for compatibility. Never add either key to frontend config or Git. `SUPABASE_PROFILE_BUCKET` is optional and defaults to `profile-avatars`. Apply `migrations/20261126_profile_avatar.sql` after the existing `users` table is present; it adds the `avatar_path` column and creates/configures the private bucket for JPEG, PNG, and WebP files up to 2 MB.
 
 ## Authentication routes
 

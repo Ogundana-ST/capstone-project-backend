@@ -10,9 +10,9 @@ const EXTENSIONS = {
 
 function settings() {
   const baseUrl = String(process.env.SUPABASE_URL || '').replace(/\/$/, '');
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const apiKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   const bucket = process.env.SUPABASE_PROFILE_BUCKET || 'profile-avatars';
-  if (!baseUrl || !serviceKey) {
+  if (!baseUrl || !apiKey) {
     throw new HttpError(503, 'Profile image storage is not configured');
   }
   let parsedUrl;
@@ -24,7 +24,7 @@ function settings() {
   if (!['https:', 'http:'].includes(parsedUrl.protocol) || !/^[a-z0-9][a-z0-9._-]{0,99}$/i.test(bucket)) {
     throw new HttpError(503, 'Profile image storage is not configured');
   }
-  return { baseUrl, serviceKey, bucket };
+  return { baseUrl, apiKey, bucket };
 }
 
 function objectUrl(baseUrl, bucket, objectPath) {
@@ -33,14 +33,16 @@ function objectUrl(baseUrl, bucket, objectPath) {
 }
 
 async function storageRequest(url, options) {
-  const { baseUrl, serviceKey } = settings();
+  const { apiKey } = settings();
+  const authHeaders = apiKey.startsWith('sb_secret_')
+    ? { apikey: apiKey }
+    : { apikey: apiKey, Authorization: `Bearer ${apiKey}` };
   let response;
   try {
     response = await fetch(url, {
       ...options,
       headers: {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
+        ...authHeaders,
         ...(options.headers || {})
       }
     });
